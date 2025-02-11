@@ -1,0 +1,66 @@
+# Base image for building
+ARG LITELLM_BUILD_IMAGE=cgr.dev/chainguard/python:latest-dev
+
+# Runtime image
+ARG LITELLM_RUNTIME_IMAGE=cgr.dev/chainguard/python:latest-dev
+
+# Builder stage
+FROM $LITELLM_BUILD_IMAGE AS builder
+
+USER root
+
+# Set the working directory to /app
+WORKDIR /app
+
+# Install build dependencies
+RUN apk update && apk add --no-cache gcc python3-dev openssl openssl-dev
+
+# Upgrade pip and install build
+RUN pip install --upgrade pip && pip install build -i https://pypi.doubanio.com/simple
+
+# Copy requirements first to leverage Docker cache
+COPY requirements.txt .
+
+# Install dependencies as wheels with cache
+RUN --mount=type=cache,target=/root/.cache/pip pip wheel --wheel-dir=/wheels/ -r requirements.txt -i https://pypi.doubanio.com/simple
+
+# Install specific versions without dependencies
+RUN pip install redisvl==0.0.7 --no-deps
+RUN pip install PyJWT==2.9.0 --no-cache-dir -i https://pypi.doubanio.com/simple
+
+# Copy all sources
+COPY . .
+
+# Build Admin UI and package
+RUN chmod +x docker/build_admin_ui.sh && ./docker/build_admin_ui.sh
+RUN rm -rf dist/* && python -m build
+
+# Runtime stage
+FROM $LITELLM_RUNTIME_IMAGE AS runtime
+
+USER root
+
+WORKDIR /app
+
+# Install runtime dependencies
+RUN apk update && apk add --no-cache openssl
+
+# Copy all sources
+COPY . .
+
+# Copy built artifacts from builder
+COPY --from=builder /app/dist/*.whl .
+COPY --from=builder /wheels/ /wheels/
+
+# Install the built wheel using pip
+RUN --mount=type=cache,target=/root/.cache/pip pip install *.whl /wheels/* --no-index --find-links=/wheels/ && rm -f *.whl && rm -rf /wheels
+
+# Generate Prisma client and set permissions
+RUN prisma generate
+RUN chmod +x docker/entrypoint.sh docker/prod_entrypoint.sh
+
+EXPOSE 4000/tcp
+
+ENTRYPOINT ["docker/prod_entrypoint.sh"]
+
+CMD ["--port", "4000"]

@@ -3421,6 +3421,17 @@ def get_optional_params(  # noqa: PLR0915
                 else False
             ),
         )
+    elif custom_llm_provider == "panzhi_openai":
+        optional_params = litellm.PanzhiChatConfig().map_openai_params(
+            non_default_params=non_default_params,
+            optional_params=optional_params,
+            model=model,
+            drop_params=(
+                drop_params
+                if drop_params is not None and isinstance(drop_params, bool)
+                else False
+            ),
+        )
     elif custom_llm_provider == "vllm":
         optional_params = litellm.VLLMConfig().map_openai_params(
             non_default_params=non_default_params,
@@ -5291,7 +5302,7 @@ def mock_completion_streaming_obj(
     if isinstance(mock_response, litellm.MockException):
         raise mock_response
     for i in range(0, len(mock_response), 3):
-        completion_obj = Delta(role="assistant", content=mock_response[i : i + 3])
+        completion_obj = Delta(role="assistant", content=mock_response[i: i + 3])
         if n is None:
             model_response.choices[0].delta = completion_obj
         else:
@@ -5300,7 +5311,7 @@ def mock_completion_streaming_obj(
                 _streaming_choice = litellm.utils.StreamingChoices(
                     index=j,
                     delta=litellm.utils.Delta(
-                        role="assistant", content=mock_response[i : i + 3]
+                        role="assistant", content=mock_response[i: i + 3]
                     ),
                 )
                 _all_choices.append(_streaming_choice)
@@ -5314,7 +5325,7 @@ async def async_mock_completion_streaming_obj(
     if isinstance(mock_response, litellm.MockException):
         raise mock_response
     for i in range(0, len(mock_response), 3):
-        completion_obj = Delta(role="assistant", content=mock_response[i : i + 3])
+        completion_obj = Delta(role="assistant", content=mock_response[i: i + 3])
         if n is None:
             model_response.choices[0].delta = completion_obj
         else:
@@ -5323,7 +5334,7 @@ async def async_mock_completion_streaming_obj(
                 _streaming_choice = litellm.utils.StreamingChoices(
                     index=j,
                     delta=litellm.utils.Delta(
-                        role="assistant", content=mock_response[i : i + 3]
+                        role="assistant", content=mock_response[i: i + 3]
                     ),
                 )
                 _all_choices.append(_streaming_choice)
@@ -6009,6 +6020,8 @@ class ProviderConfigManager:
             return litellm.AiohttpOpenAIChatConfig()
         elif litellm.LlmProviders.HOSTED_VLLM == provider:
             return litellm.HostedVLLMChatConfig()
+        elif litellm.LlmProviders.PANZHI_OPENAI == provider:
+            return litellm.PanzhiChatConfig()
         elif litellm.LlmProviders.LM_STUDIO == provider:
             return litellm.LMStudioChatConfig()
         elif litellm.LlmProviders.GALADRIEL == provider:
