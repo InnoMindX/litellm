@@ -23,6 +23,8 @@ def remove_sensitive_info_from_deployment(deployment_dict: dict) -> dict:
     deployment_dict["litellm_params"].pop("vertex_credentials", None)
     deployment_dict["litellm_params"].pop("aws_access_key_id", None)
     deployment_dict["litellm_params"].pop("aws_secret_access_key", None)
+    deployment_dict["litellm_params"].pop("panzhou_app_id", None)
+    deployment_dict["litellm_params"].pop("panzhou_app_key", None)
 
     return deployment_dict
 
