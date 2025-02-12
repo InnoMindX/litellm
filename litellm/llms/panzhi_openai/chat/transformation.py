@@ -57,9 +57,9 @@ class PanzhiChatConfig(OpenAIGPTConfig):
         Returns:
             dict: The transformed request. Sent as the body of the API call.
         """
-        print("optional_params", optional_params)
-        print("litellm_params", litellm_params)
-        print("headers", headers)
+        # print("optional_params", optional_params)
+        # print("litellm_params", litellm_params)
+        # print("headers", headers)
         extra_body = optional_params.get("extra_body", {})
 
         # 获取并删除字段

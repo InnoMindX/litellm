@@ -130,6 +130,7 @@ from .llms.custom_httpx.llm_http_handler import BaseLLMHTTPHandler
 from .llms.custom_llm import CustomLLM, custom_chat_llm_router
 from .llms.databricks.chat.handler import DatabricksChatCompletion
 from .llms.databricks.embed.handler import DatabricksEmbeddingHandler
+from .llms.panzhi_openai.embed.handler import PanzhiEmbeddingHandler
 from .llms.deprecated_providers import aleph_alpha, palm
 from .llms.groq.chat.handler import GroqChatCompletion
 from .llms.huggingface.chat.handler import Huggingface
@@ -232,6 +233,7 @@ watsonx_chat_completion = WatsonXChatHandler()
 openai_like_embedding = OpenAILikeEmbeddingHandler()
 openai_like_chat_completion = OpenAILikeChatHandler()
 databricks_embedding = DatabricksEmbeddingHandler()
+panzhi_embedding = PanzhiEmbeddingHandler()
 base_llm_http_handler = BaseLLMHTTPHandler()
 base_llm_aiohttp_handler = BaseLLMAIOHTTPHandler()
 sagemaker_chat_completion = SagemakerChatHandler()
@@ -3481,11 +3483,33 @@ def embedding(  # noqa: PLR0915
                 client=client,
                 aembedding=aembedding,
             )
+        elif custom_llm_provider == "panzhi_openai":
+            api_base = api_base or litellm.api_base or get_secret("DATABRICKS_API_BASE")  # type: ignore
+            # set API KEY
+            api_key = (
+                api_key
+                or litellm.api_key
+                or litellm.databricks_key
+                or get_secret("DATABRICKS_API_KEY")
+            )  # type: ignore
+
+            ## EMBEDDING CALL
+            response = panzhi_embedding.embedding(
+                model=model,
+                input=input,
+                api_base=api_base,
+                api_key=api_key,
+                logging_obj=logging,
+                timeout=timeout,
+                model_response=EmbeddingResponse(),
+                optional_params=optional_params,
+                client=client,
+                aembedding=aembedding,
+            )
         elif (
             custom_llm_provider == "openai_like"
             or custom_llm_provider == "jina_ai"
             or custom_llm_provider == "hosted_vllm"
-            or custom_llm_provider == "panzhi_openai"
             or custom_llm_provider == "lm_studio"
         ):
             api_base = (
