@@ -58,10 +58,18 @@ model_list:
       tpm: 6000
   - model_name: text-embedding-bge-m3
     litellm_params:
-      model: openai/text-embedding-bge-m3
+      model: panzhi_openai/text-embedding-bge-m3
       api_base: http://192.168.4.127:8000/v1
       api_key: "sk-anything"
-      panzhou_app_id: "os.environ/OVHAI_APP_ID"
+      panzhi_app_id: "os.environ/R1_32B_APP_ID"
+      panzhi_app_key: "os.environ/R1_32B_APP_KEY"
+  - model_name: bge-base
+    litellm_params:
+      model: panzhi_openai/bge
+      api_base: http://172.21.153.46:9050/gw/v1
+      api_key: "sk-anything"
+      panzhi_app_id: "os.environ/JUZHI_APP_ID"
+      panzhi_app_key: "os.environ/JUZHI_APP_KEY"
   - model_name: DeepSeek-R1-Distill-Qwen-32B
     litellm_params:
       model: panzhi_openai/DeepSeek-R1-Distill-Qwen-32B
@@ -111,5 +119,6 @@ litellm_settings: # module level litellm settings - https://github.com/BerriAI/l
 # router_settings:
 #   model_group_alias: {"Qwen*": "llama-3.3-70b"} # all requests will be routed to models with the same name
 general_settings: 
-  master_key: sk-1234 # [OPTIONAL] Only use this if you to require all calls to contain this key (Authorization: Bearer sk-1234)
+  custom_auth: disable_auth.user_api_key_auth
+#   master_key: sk-1234 # [OPTIONAL] Only use this if you to require all calls to contain this key (Authorization: Bearer sk-1234)
   # alerting: ["slack"] # [OPTIONAL] If you want Slack Alerts for Hanging LLM requests, Slow llm responses, Budget Alerts. Make sure to set `SLACK_WEBHOOK_URL` in your env
